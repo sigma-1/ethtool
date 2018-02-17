@@ -9,7 +9,11 @@
 #ifndef _NET_TIMESTAMPING_H
 #define _NET_TIMESTAMPING_H
 
+#ifndef __APPLE__
 #include <linux/socket.h>   /* for SO_TIMESTAMPING */
+#else
+#include <sys/socket.h>
+#endif
 
 /* SO_TIMESTAMPING gets an integer bit field comprised of these values */
 enum {

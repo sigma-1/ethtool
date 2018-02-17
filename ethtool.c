@@ -40,7 +40,11 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#ifndef __APPLE__
 #include <linux/sockios.h>
+#else
+#include <sys/sockio.h>
+#endif
 
 #ifndef MAX_ADDR_LEN
 #define MAX_ADDR_LEN	32
@@ -211,13 +215,13 @@ static const struct off_flag_def off_flag_def[] = {
 	  ETHTOOL_GGRO,	   ETHTOOL_SGRO,    ETH_FLAG_GRO,	0 },
 	{ "lro",    "large-receive-offload",	    "rx-lro",
 	  0,		   0,		    ETH_FLAG_LRO,
-	  KERNEL_VERSION(2,6,24) },
+	  0 },
 	{ "rxvlan", "rx-vlan-offload",		    "rx-vlan-hw-parse",
 	  0,		   0,		    ETH_FLAG_RXVLAN,
-	  KERNEL_VERSION(2,6,37) },
+	  0 },
 	{ "txvlan", "tx-vlan-offload",		    "tx-vlan-hw-insert",
 	  0,		   0,		    ETH_FLAG_TXVLAN,
-	  KERNEL_VERSION(2,6,37) },
+	  0 },
 	{ "ntuple", "ntuple-filters",		    "rx-ntuple-filter",
 	  0,		   0,		    ETH_FLAG_NTUPLE,	0 },
 	{ "rxhash", "receive-hashing",		    "rx-hashing",
@@ -1598,7 +1602,7 @@ static int do_gpause(struct cmd_context *ctx)
 
 static void do_generic_set1(struct cmdline_info *info, int *changed_out)
 {
-	int wanted, *v1, *v2;
+	/*int wanted, *v1, *v2;
 
 	v1 = info->wanted_val;
 	wanted = *v1;
@@ -1610,9 +1614,10 @@ static void do_generic_set1(struct cmdline_info *info, int *changed_out)
 	if (wanted == *v2) {
 		fprintf(stderr, "%s unmodified, ignoring\n", info->name);
 	} else {
-		*v2 = wanted;
+		*v2 = wanted;*/
+        info->ioctl_val = info->wanted_val;
 		*changed_out = 1;
-	}
+	/*}*/
 }
 
 static void do_generic_set(struct cmdline_info *info,
@@ -1658,7 +1663,7 @@ static int do_spause(struct cmd_context *ctx)
 	}
 
 	epause.cmd = ETHTOOL_SPAUSEPARAM;
-	err = send_ioctl(ctx, &epause);
+	err = send_ioctl_set(ctx, &epause);
 	if (err) {
 		perror("Cannot set device pause parameters");
 		return 79;
@@ -3722,10 +3727,18 @@ static int do_seee(struct cmd_context *ctx)
 	return 0;
 }
 
+int send_ioctl_set(struct cmd_context *ctx, void *cmd)
+{
+	ctx->ifr.ifr_data = cmd;
+    memcpy(ctx->ifr.ifr_name, ctx->devname, strlen(ctx->devname));
+	return ioctl(ctx->fd, SIOCSIFFLAGS, &ctx->ifr);
+}
+
 #ifndef TEST_ETHTOOL
 int send_ioctl(struct cmd_context *ctx, void *cmd)
 {
 	ctx->ifr.ifr_data = cmd;
+    memcpy(ctx->ifr.ifr_name, ctx->devname, strlen(ctx->devname));
 	return ioctl(ctx->fd, SIOCETHTOOL, &ctx->ifr);
 }
 #endif

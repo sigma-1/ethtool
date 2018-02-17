@@ -11,7 +11,52 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
+#ifndef __APPLE__
 #include <endian.h>
+#else
+#include <machine/endian.h>
+
+#ifndef __u8_d
+#define __u8_d 1
+typedef unsigned char __u8;
+#endif
+
+#ifndef __u16_d
+#define __u16_d 1
+typedef unsigned short __u16;
+#endif
+
+#ifndef __u32_d
+#define __u32_d 1
+typedef unsigned int __u32;
+#endif
+
+#ifndef __u64_d
+#define __u64_d 1
+typedef unsigned long long __u64;
+#endif
+
+#ifndef __s8_d
+#define __s8_d 1
+typedef char __s8;
+#endif
+
+#ifndef __s16_d
+#define __s16_d 1
+typedef short __s16;
+#endif
+
+#ifndef __s32_d
+#define __s32_d 1
+typedef int __s32;
+#endif
+
+#ifndef __s64_d
+#define __s64_d 1
+typedef long long __s64;
+#endif
+
+#endif
 #include <sys/ioctl.h>
 #include <net/if.h>
 
@@ -59,8 +104,10 @@ static inline u64 cpu_to_be64(u64 value)
 }
 #endif
 
+#ifndef __APPLE__
 #define ntohll cpu_to_be64
 #define htonll cpu_to_be64
+#endif
 
 #define BITS_PER_BYTE		8
 #define BITS_PER_LONG		(BITS_PER_BYTE * sizeof(long))
@@ -88,7 +135,11 @@ static inline int test_bit(unsigned int nr, const unsigned long *addr)
 #endif
 
 #ifndef SIOCETHTOOL
+#ifndef __APPLE__
 #define SIOCETHTOOL     0x8946
+#else
+#define SIOCETHTOOL     SIOCGIFFLAGS
+#endif
 #endif
 
 /* Internal values for old-style offload flags.  Values and names
@@ -171,6 +222,7 @@ int test_fclose(FILE *fh);
 #endif
 
 int send_ioctl(struct cmd_context *ctx, void *cmd);
+int send_ioctl_set(struct cmd_context *ctx, void *cmd);
 
 void dump_hex(FILE *f, const u8 *data, int len, int offset);
 

@@ -8,9 +8,16 @@
 #include <string.h>
 #include <errno.h>
 
+#ifndef __APPLE__
 #include <linux/sockios.h>
+#else
+#include <sys/sockio.h>
+#include <net/ethernet.h>
+#endif
+
 #include <arpa/inet.h>
 #include "internal.h"
+#include "ethtool-copy.h"
 
 static void invert_flow_mask(struct ethtool_rx_flow_spec *fsp)
 {

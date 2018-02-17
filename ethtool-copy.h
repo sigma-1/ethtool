@@ -13,8 +13,20 @@
 #ifndef _LINUX_ETHTOOL_H
 #define _LINUX_ETHTOOL_H
 
+#ifndef __APPLE__
 #include <linux/types.h>
 #include <linux/if_ether.h>
+#else
+#include <sys/types.h>
+#include <netinet/if_ether.h>
+#include <net/ethernet.h>
+
+#define ETH_ALEN ETHER_ADDR_LEN
+#define ethhdr ether_header
+#define h_source ether_shost
+#define h_dest ether_dhost
+#define h_proto ether_type
+#endif
 
 /* This should work for both 32 and 64 bit userland. */
 struct ethtool_cmd {
